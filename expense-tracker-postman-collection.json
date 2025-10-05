@@ -1,0 +1,908 @@
+{
+  "info": {
+    "name": "Expense Tracker API",
+    "description": "Personal Expense Tracker API with AI Insights - A comprehensive expense management system built with Laravel and React, featuring AI-powered financial insights and analytics.",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string",
+      "description": "Bearer token obtained from login/register endpoints"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "register"
+              ]
+            },
+            "description": "Register a new user account"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
+            },
+            "description": "Login user and return JWT token",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.data && response.data.token) {",
+                    "        pm.collectionVariables.set('authToken', response.data.token);",
+                    "        console.log('Token saved to collection variable: ' + response.data.token);",
+                    "    }",
+                    "}"
+                  ]
+                }
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            },
+            "description": "Logout user and revoke token"
+          },
+          "response": []
+        }
+      ],
+      "description": "APIs for user authentication and authorization"
+    },
+    {
+      "name": "Categories",
+      "description": "Category management endpoints",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Display a listing of categories"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Food & Dining\",\n  \"description\": \"Restaurants, groceries, and food delivery\",\n  \"color\": \"#EF4444\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            },
+            "description": "Store a newly created category"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Expenses",
+      "description": "Expense management endpoints",
+      "item": [
+        {
+          "name": "List Expenses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ]
+            },
+            "description": "Display a listing of expenses with optional filtering"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Expense",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"title\": \"Grocery Shopping\",\n  \"description\": \"Weekly groceries from SuperMart\",\n  \"amount\": 85.50,\n  \"expense_date\": \"2025-10-04\",\n  \"payment_method\": \"card\",\n  \"location\": \"SuperMart Downtown\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ]
+            },
+            "description": "Store a newly created expense"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Expense Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/statistics/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "statistics",
+                "dashboard"
+              ]
+            },
+            "description": "Get expense statistics for dashboard"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "description": "Budget management endpoints",
+      "item": [
+        {
+          "name": "List Budgets",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/budgets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            },
+            "description": "Display a listing of user's budgets"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Budget",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500.00,\n  \"category_id\": 1,\n  \"period\": \"monthly\",\n  \"start_date\": \"2025-10-01\",\n  \"end_date\": \"2025-10-31\",\n  \"description\": \"Monthly food budget\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/budgets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "budgets"
+              ]
+            },
+            "description": "Store a newly created budget"
+          },
+          "response": []
+        },
+        {
+          "name": "Get AI Budget Suggestions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/budgets/ai-suggestions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "budgets",
+                "ai-suggestions"
+              ]
+            },
+            "description": "Get AI-powered budget suggestions"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Financial Goals",
+      "description": "Financial goals management endpoints",
+      "item": [
+        {
+          "name": "List Financial Goals",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/financial-goals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "financial-goals"
+              ]
+            },
+            "description": "Display a listing of the user's financial goals"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Financial Goal",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Emergency Fund\",\n  \"description\": \"Build a 6-month emergency fund\",\n  \"type\": \"emergency_fund\",\n  \"target_amount\": 15000.00,\n  \"current_amount\": 0,\n  \"target_date\": \"2025-12-31\",\n  \"priority\": \"high\",\n  \"monthly_contribution\": 1000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/financial-goals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "financial-goals"
+              ]
+            },
+            "description": "Store a newly created financial goal"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cash Flow",
+      "description": "Cash flow tracking endpoints",
+      "item": [
+        {
+          "name": "List Cash Flow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cash-flow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cash-flow"
+              ]
+            },
+            "description": "Display a listing of cash flow entries"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Cash Flow Entry",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000.00,\n  \"type\": \"income\",\n  \"description\": \"Monthly salary\",\n  \"date\": \"2025-10-01\",\n  \"category\": \"Salary\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cash-flow",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cash-flow"
+              ]
+            },
+            "description": "Store a newly created cash flow entry"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Monthly Trend",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/cash-flow/monthly-trend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cash-flow",
+                "monthly-trend"
+              ]
+            },
+            "description": "Get monthly cash flow trend"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI Insights",
+      "description": "AI-powered financial insights endpoints",
+      "item": [
+        {
+          "name": "Get AI Insights",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timeframe\": \"month\",\n  \"categories\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/insights",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ai",
+                "insights"
+              ]
+            },
+            "description": "Get AI insights for user's expenses"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Predictive Analysis",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"months_ahead\": 3,\n  \"categories\": [1, 2, 3]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/predictive-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ai",
+                "predictive-analysis"
+              ]
+            },
+            "description": "Get predictive spending analysis"
+          },
+          "response": []
+        },
+        {
+          "name": "Detect Anomalies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"months\": 6,\n  \"sensitivity\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ai/anomaly-detection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ai",
+                "anomaly-detection"
+              ]
+            },
+            "description": "Detect spending anomalies"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Savings & Analytics",
+      "description": "Savings opportunities and analytics endpoints",
+      "item": [
+        {
+          "name": "Get Savings Opportunities",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/savings-opportunities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "savings-opportunities"
+              ]
+            },
+            "description": "Get savings opportunities for the user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Categorization Suggestions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categorization-suggestions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorization-suggestions"
+              ]
+            },
+            "description": "Get automated expense categorization suggestions"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscription Analysis",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/subscription-analysis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "subscription-analysis"
+              ]
+            },
+            "description": "Get subscription and recurring expense analysis"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "    pm.collectionVariables.set('baseUrl', 'http://localhost:8000/api');",
+          "}",
+          "",
+          "// Debug: Log current token",
+          "console.log('Current token: ' + pm.collectionVariables.get('authToken'));"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "expense-tracker-env",
+  "name": "Expense Tracker Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api",
+      "description": "Base URL for the Expense Tracker API",
+      "enabled": true
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "description": "Bearer token obtained from login - leave empty initially",
+      "enabled": true
+    },
+    {
+      "key": "userEmail",
+      "value": "test@example.com",
+      "description": "Test user email for authentication",
+      "enabled": true
+    },
+    {
+      "key": "userPassword",
+      "value": "password",
+      "description": "Test user password",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}
