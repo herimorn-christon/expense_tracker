@@ -46,7 +46,7 @@ The **Expense Tracker** is a comprehensive financial management solution that en
 ### Backend (Laravel)
 - **Laravel 10.10** - PHP web framework
 - **PHP 8.1+** - Server-side scripting
-- **PostgreSQL** - Primary database
+- **MySQL** - Primary database
 - **Laravel Sanctum** - API authentication
 - **Scramble** - API documentation generation
 - **OpenAI API** - AI-powered insights
@@ -73,7 +73,7 @@ The **Expense Tracker** is a comprehensive financial management solution that en
 - **PHP 8.1 or higher**
 - **Composer** (PHP dependency manager)
 - **Node.js 16+ and npm**
-- **PostgreSQL 13+**
+- **MySQL 8.0+**
 - **Flutter SDK 3.8.1+**
 - **Git**
 
@@ -104,12 +104,12 @@ php artisan key:generate
 ### 2. Database Configuration
 Update your `.env` file with database credentials:
 ```env
-DB_CONNECTION=pgsql
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=expense_tracker
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
 ### 3. Database Setup
@@ -692,19 +692,19 @@ jobs:
 ### Laravel Backend (.env)
 ```env
 # Application
-APP_NAME="Expense Tracker"
+APP_NAME=Laravel
 APP_ENV=local
 APP_KEY=base64:your-generated-key
 APP_DEBUG=true
-APP_URL=http://localhost:8000
+APP_URL=http://localhost
 
 # Database
-DB_CONNECTION=pgsql
+DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=expense_tracker
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
 
 # OpenAI Configuration (Optional)
 OPENAI_API_KEY=your_openai_api_key
@@ -943,7 +943,7 @@ APP_KEY=base64:your-secure-key
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
 
-DB_CONNECTION=pgsql
+DB_CONNECTION=mysql
 DB_HOST=your_db_host
 DB_DATABASE=your_db_name
 DB_USERNAME=your_db_user
@@ -1102,7 +1102,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Flutter** - Cross-platform mobile framework
 - **Tailwind CSS** - Utility-first CSS framework
 - **OpenAI API** - AI-powered insights
-- **PostgreSQL** - Robust database solution
+- **MySQL** - Robust database solution
 - **All contributors and supporters**
 
 ---

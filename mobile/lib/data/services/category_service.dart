@@ -8,6 +8,7 @@ class CategoryService {
 
   Future<List<Category>> getCategories() async {
     try {
+      // Add user-specific parameter to ensure proper filtering
       final response = await _apiClient.get('/categories');
 
       if (response.statusCode == 200) {

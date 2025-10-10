@@ -38,7 +38,7 @@ void main() async {
   await authProvider.initialize();
 
   final expenseListViewModel = ExpenseListViewModel(expenseService, categoryService);
-  final dashboardViewModel = DashboardViewModel(dashboardService);
+  final dashboardViewModel = DashboardViewModel(dashboardService, categoryService);
   final aiInsightsViewModel = AIInsightsViewModel(aiService);
   final categoryViewModel = CategoryViewModel(categoryService);
   final budgetViewModel = BudgetViewModel(budgetService);

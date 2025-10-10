@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @group Expense Management
@@ -216,6 +217,9 @@ class ExpenseController extends Controller
                 'recurrence_type' => $validated['recurrence_type'] ?? null,
             ]);
 
+            // Clear AI insights cache for this user
+            \App\Http\Controllers\AIController::clearUserInsightsCache(Auth::id());
+
             return response()->json([
                 'success' => true,
                 'message' => 'Expense created successfully',
@@ -386,6 +390,9 @@ class ExpenseController extends Controller
 
             $expense->update($validated);
 
+            // Clear AI insights cache for this user
+            \App\Http\Controllers\AIController::clearUserInsightsCache(Auth::id());
+
             return response()->json([
                 'success' => true,
                 'message' => 'Expense updated successfully',
@@ -431,6 +438,9 @@ class ExpenseController extends Controller
         }
 
         $expense->delete();
+
+        // Clear AI insights cache for this user
+        \App\Http\Controllers\AIController::clearUserInsightsCache(Auth::id());
 
         return response()->json([
             'success' => true,

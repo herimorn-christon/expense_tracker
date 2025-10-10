@@ -269,7 +269,7 @@ class CategoryController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot delete category with existing expenses'
-            ], 422);
+            ], 409);
         }
 
         $category->delete();

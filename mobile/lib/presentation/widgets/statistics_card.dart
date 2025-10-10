@@ -152,14 +152,8 @@ class StatisticsGrid extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            Expanded(
-              child: StatisticsCard(
-                title: 'Categories',
-                value: _getCategoryCount().toString(),
-                subtitle: 'Active categories',
-                icon: Icons.category,
-                color: Colors.purple,
-              ),
+            const Expanded(
+              child: SizedBox.shrink(), // Remove categories card completely
             ),
           ],
         ),
@@ -168,6 +162,8 @@ class StatisticsGrid extends StatelessWidget {
   }
 
   int _getCategoryCount() {
+    // For now, return categories with expenses until we modify the backend
+    // to include all categories count in the statistics response
     final expensesByCategory = statistics['expenses_by_category'] as List<dynamic>? ?? [];
     return expensesByCategory.length;
   }

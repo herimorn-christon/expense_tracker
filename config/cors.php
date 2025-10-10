@@ -18,23 +18,30 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
-
-    'allowed_origins' => array_filter([
-        env('FRONTEND_URL', 'http://localhost:3000'),
+    'allowed_origins' => [
+        'http://localhost:3000',
         'http://localhost:3001',
         'http://127.0.0.1:3000',
         'http://127.0.0.1:3001',
-        // Add mobile app origins if configured
-        env('MOBILE_APP_URL'),
-    ]),
+    ],
+    'allowed_origins_patterns' => [
+        'http://localhost:*',
+        'http://127.0.0.1:*',
+    ],
+    'allowed_headers' => [
+        '*',
+        'Authorization',
+        'Content-Type',
+        'X-Requested-With',
+        'Accept',
+        'Origin',
+    ],
+    'exposed_headers' => [
+        'Authorization',
+        'Content-Type',
+    ],
 
-    'allowed_origins_patterns' => [],
-
-    'allowed_headers' => ['*'],
-
-    'exposed_headers' => [],
-
-    'max_age' => 0,
+    'max_age' => 86400, // 24 hours
 
     'supports_credentials' => true,
 

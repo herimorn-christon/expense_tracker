@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
  * @group Authentication
@@ -61,19 +62,6 @@ class AuthController extends Controller
      *   }
      * }
      *
-     * @response 200 {
-     *   "success": true,
-     *   "message": "User registered successfully",
-     *   "data": {
-     *     "user": {
-     *       "id": 1,
-     *       "name": "John Doe",
-     *       "email": "john@example.com"
-     *     },
-     *     "token": "1|WNKYnSyHSw3CSMqWkwmXOa43nutFzT6Xwg3LnbEI136c0def"
-     *   }
-     * }
-     *
      * @response 422 {
      *   "success": false,
      *   "message": "Validation failed",
@@ -98,7 +86,7 @@ class AuthController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            $token = $user->createToken('expense-tracker-token')->plainTextToken;
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'success' => true,
@@ -107,7 +95,7 @@ class AuthController extends Controller
                     'user' => $user,
                     'token' => $token
                 ]
-            ], 201);
+            ], 201)->header('Access-Control-Allow-Credentials', 'true');
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -172,7 +160,7 @@ class AuthController extends Controller
             }
 
             $user = Auth::user();
-            $token = $user->createToken('expense-tracker-token')->plainTextToken;
+            $token = JWTAuth::fromUser($user);
 
             return response()->json([
                 'success' => true,
@@ -181,7 +169,7 @@ class AuthController extends Controller
                     'user' => $user,
                     'token' => $token
                 ]
-            ]);
+            ])->header('Access-Control-Allow-Credentials', 'true');
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -211,11 +199,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        JWTAuth::invalidate(JWTAuth::getToken());
 
         return response()->json([
             'success' => true,
             'message' => 'Logout successful'
-        ]);
+        ])->header('Access-Control-Allow-Credentials', 'true');
     }
 }

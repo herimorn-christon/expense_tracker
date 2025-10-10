@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @group AI Insights & Analytics
@@ -88,13 +89,25 @@ class AIController extends Controller
             $userId = Auth::id();
             $timeframe = $validated['timeframe'] ?? 'month';
 
+            // Create cache key based on user and parameters
+            $cacheKey = "ai_insights_{$userId}_{$timeframe}_" . md5(json_encode($validated['categories'] ?? []));
+
+            // Check cache first (cache for 30 minutes)
+            $cachedResult = Cache::get($cacheKey);
+            if ($cachedResult) {
+                Log::info('Returning cached AI insights for user: ' . $userId);
+                return response()->json($cachedResult);
+            }
+
             // Get date range based on timeframe
             $dateRange = $this->getDateRange($timeframe);
 
-            // Get user's expenses for the timeframe
+            // Get user's expenses for the timeframe with optimized query
             $expenses = Expense::forUser($userId)
                 ->dateRange($dateRange['start'], $dateRange['end'])
                 ->with('category')
+                ->select('id', 'amount', 'expense_date', 'category_id', 'payment_method')
+                ->orderBy('expense_date', 'desc')
                 ->get();
 
             if ($expenses->isEmpty()) {
@@ -121,7 +134,7 @@ class AIController extends Controller
             // Get AI insights (using a placeholder for now - you can integrate with actual AI service)
             $insights = $this->generateInsights($expenseData);
 
-            return response()->json([
+            $result = [
                 'success' => true,
                 'data' => [
                     'timeframe' => $timeframe,
@@ -132,7 +145,12 @@ class AIController extends Controller
                     'suggestions' => $insights['suggestions'],
                     'trends' => $insights['trends']
                 ]
-            ]);
+            ];
+
+            // Cache the result for 30 minutes
+            Cache::put($cacheKey, $result, now()->addMinutes(30));
+
+            return response()->json($result);
 
         } catch (\Exception $e) {
             Log::error('AI Insights Error: ' . $e->getMessage());
@@ -254,7 +272,7 @@ class AIController extends Controller
         // Log the prompt being sent to OpenAI
         Log::info('OpenAI Prompt: ' . $prompt);
 
-        $response = Http::timeout(30)
+        $response = Http::timeout(10)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . config('services.openai.api_key'),
                 'Content-Type' => 'application/json',
@@ -1073,5 +1091,21 @@ class AIController extends Controller
             ->selectRaw('category_id, SUM(amount) as total, COUNT(*) as count')
             ->groupBy('category_id')
             ->get();
+    }
+
+    /**
+     * Clear AI insights cache for a user.
+     */
+    public static function clearUserInsightsCache(int $userId): void
+    {
+        $cachePatterns = [
+            "ai_insights_{$userId}_*",
+        ];
+
+        foreach ($cachePatterns as $pattern) {
+            Cache::forget($pattern);
+        }
+
+        Log::info("Cleared AI insights cache for user: {$userId}");
     }
 }

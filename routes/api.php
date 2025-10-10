@@ -21,7 +21,7 @@ Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth.jwt')->group(function () {
     // User info
     Route::get('/user', function (Request $request) {
         return $request->user();

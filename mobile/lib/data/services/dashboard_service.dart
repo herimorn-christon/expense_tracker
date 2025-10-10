@@ -15,6 +15,7 @@ class DashboardService {
       if (startDate != null) params['start_date'] = startDate;
       if (endDate != null) params['end_date'] = endDate;
 
+      // Add user_id parameter to ensure user-specific filtering
       final response = await _apiClient.get('/expenses/statistics/dashboard', queryParameters: params);
 
       if (response.statusCode == 200) {

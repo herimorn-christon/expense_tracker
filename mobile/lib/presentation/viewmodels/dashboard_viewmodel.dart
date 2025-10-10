@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_mobile/data/services/dashboard_service.dart';
+import 'package:expense_tracker_mobile/data/services/category_service.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final DashboardService _dashboardService;
+  final CategoryService _categoryService;
 
   Map<String, dynamic>? _statistics;
   Map<String, dynamic>? _budgetStatistics;
@@ -14,7 +16,7 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isLoadingBudget = false;
   String? _error;
 
-  DashboardViewModel(this._dashboardService);
+  DashboardViewModel(this._dashboardService, this._categoryService);
 
   Map<String, dynamic>? get statistics => _statistics;
   Map<String, dynamic>? get budgetStatistics => _budgetStatistics;
@@ -34,6 +36,16 @@ class DashboardViewModel extends ChangeNotifier {
     return _statistics != null ? (_statistics!['expense_count'] ?? 0) : 0;
   }
 
+  Future<int> getTotalCategoriesCount() async {
+    try {
+      final categories = await _categoryService.getCategories();
+      return categories.length;
+    } catch (e) {
+      print('Failed to load categories count: $e');
+      return 0;
+    }
+  }
+
   Future<void> loadDashboardData() async {
     await Future.wait([
       loadStatistics(),
@@ -50,8 +62,10 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       _statistics = await _dashboardService.getExpenseStatistics();
+      print('Loaded statistics for user: $_statistics');
     } catch (e) {
       _error = e.toString();
+      print('Error loading statistics: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -93,6 +107,7 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       _categoryBreakdown = await _dashboardService.getCategoryBreakdown();
+      print('Loaded category breakdown: $_categoryBreakdown');
     } catch (e) {
       print('Failed to load category breakdown: $e');
     } finally {
@@ -102,7 +117,20 @@ class DashboardViewModel extends ChangeNotifier {
   }
 
   Future<void> refreshDashboard() async {
+    // Prevent multiple simultaneous refresh calls
+    if (_isLoading || _isLoadingTrend || _isLoadingBreakdown || _isLoadingBudget) {
+      return;
+    }
     await loadDashboardData();
+  }
+
+  void clearDashboardData() {
+    _statistics = null;
+    _budgetStatistics = null;
+    _monthlyTrend = [];
+    _categoryBreakdown = [];
+    _error = null;
+    notifyListeners();
   }
 
   void clearError() {

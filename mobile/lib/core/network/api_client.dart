@@ -6,7 +6,7 @@ class ApiClient {
   // Get base URL from environment variables with fallback
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.103:8000/api',
+     defaultValue: 'http://192.168.1.104:8000/api',
   );
 
   // Alternative URLs for different environments (commented out for reference):

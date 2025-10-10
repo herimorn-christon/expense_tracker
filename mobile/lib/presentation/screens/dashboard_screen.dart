@@ -28,16 +28,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _screens = [
       HomeTab(
-        onNavigateToExpenses: () => setState(() => _currentIndex = 1),
-        onNavigateToAIInsights: () => setState(() => _currentIndex = 2),
-        onNavigateToCategories: () => setState(() => _currentIndex = 3),
-        onNavigateToBudgets: () => setState(() => _currentIndex = 4),
+        onNavigateToExpenses: () => _navigateToTab(1),
+        onNavigateToAIInsights: () => _navigateToTab(2),
+        onNavigateToCategories: () => _navigateToTab(3),
+        onNavigateToBudgets: () => _navigateToTab(4),
       ),
       const ExpensesListScreen(),
       const AIInsightsScreen(),
       const CategoriesScreen(),
       const BudgetsScreen(),
     ];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Listen for auth changes and refresh dashboard data
+    final authProvider = context.watch<AuthProvider>();
+    if (authProvider.user != null) {
+      // User is logged in, ensure dashboard data is loaded
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final dashboardViewModel = context.read<DashboardViewModel>();
+        if (dashboardViewModel.statistics == null && !dashboardViewModel.isLoading) {
+          dashboardViewModel.loadDashboardData();
+        }
+      });
+    }
+  }
+
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  void _onTabChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
+    // Refresh dashboard data when navigating to dashboard tab (with throttling)
+    if (index == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final dashboardViewModel = context.read<DashboardViewModel>();
+        // Only refresh if not already loading (ViewModel handles throttling)
+        if (!dashboardViewModel.isLoading && !dashboardViewModel.isLoadingTrend && !dashboardViewModel.isLoadingBreakdown) {
+          dashboardViewModel.refreshDashboard();
+        }
+      });
+    }
+  }
+
+  void _refreshDashboardData() {
+    final dashboardViewModel = context.read<DashboardViewModel>();
+    dashboardViewModel.refreshDashboard();
   }
 
   @override
@@ -56,11 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ) : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _onTabChanged,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
@@ -89,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-class HomeTab extends StatelessWidget {
+class HomeTab extends StatefulWidget {
   final VoidCallback onNavigateToExpenses;
   final VoidCallback onNavigateToAIInsights;
   final VoidCallback onNavigateToCategories;
@@ -104,22 +144,86 @@ class HomeTab extends StatelessWidget {
   });
 
   @override
+  State<HomeTab> createState() => _HomeTabState();
+}
+
+class _HomeTabState extends State<HomeTab> {
+  int? _currentUserId;
+  bool _isRefreshing = false;
+
+  void _checkUserChange(AuthProvider authProvider, DashboardViewModel dashboardViewModel) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentUserId = authProvider.user?.id;
+
+      if (authProvider.user == null) {
+        // User is not logged in, clear dashboard data
+        dashboardViewModel.clearDashboardData();
+        _currentUserId = null;
+      } else if (_currentUserId != currentUserId && !_isRefreshing) {
+        // User has changed, clear old data and load new data (with throttling)
+        print('User changed from $_currentUserId to $currentUserId, refreshing dashboard data');
+        setState(() {
+          _isRefreshing = true;
+        });
+        dashboardViewModel.clearDashboardData();
+        dashboardViewModel.loadDashboardData().then((_) {
+          setState(() {
+            _isRefreshing = false;
+          });
+        });
+        _currentUserId = currentUserId;
+      } else if (!_isRefreshing && !dashboardViewModel.isLoading && dashboardViewModel.statistics == null) {
+        // Same user but no data loaded, load dashboard data
+        dashboardViewModel.loadDashboardData();
+      }
+    });
+  }
+
+  Future<void> _refreshDashboardData() async {
+    if (_isRefreshing) return; // Prevent multiple simultaneous refreshes
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      final dashboardViewModel = context.read<DashboardViewModel>();
+      await dashboardViewModel.refreshDashboard();
+
+      // Small delay to ensure data is loaded
+      await Future.delayed(const Duration(milliseconds: 500));
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final dashboardViewModel = context.watch<DashboardViewModel>();
 
-    // Load dashboard data when widget is first built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!dashboardViewModel.isLoading && dashboardViewModel.statistics == null) {
-        dashboardViewModel.loadDashboardData();
-      }
-    });
+    // Check if user has changed and refresh data accordingly
+    _checkUserChange(authProvider, dashboardViewModel);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expense Tracker'),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: _isRefreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
+            onPressed: _isRefreshing ? null : () {
+              _refreshDashboardData();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -128,9 +232,13 @@ class HomeTab extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _refreshDashboardData();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Welcome Card
@@ -218,7 +326,7 @@ class HomeTab extends StatelessWidget {
                     icon: Icons.list,
                     title: 'View Expenses',
                     color: Colors.blue,
-                    onTap: onNavigateToExpenses,
+                    onTap: widget.onNavigateToExpenses,
                   ),
                 ),
               ],
@@ -233,7 +341,7 @@ class HomeTab extends StatelessWidget {
                     icon: Icons.insights,
                     title: 'AI Insights',
                     color: Colors.purple,
-                    onTap: onNavigateToAIInsights,
+                    onTap: widget.onNavigateToAIInsights,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -242,7 +350,7 @@ class HomeTab extends StatelessWidget {
                     icon: Icons.category,
                     title: 'Categories',
                     color: Colors.orange,
-                    onTap: onNavigateToCategories,
+                    onTap: widget.onNavigateToCategories,
                   ),
                 ),
               ],
@@ -257,7 +365,7 @@ class HomeTab extends StatelessWidget {
                     icon: Icons.account_balance_wallet,
                     title: 'Budgets',
                     color: Colors.purple,
-                    onTap: onNavigateToBudgets,
+                    onTap: widget.onNavigateToBudgets,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -383,6 +491,7 @@ class HomeTab extends StatelessWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }
